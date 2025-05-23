@@ -1,61 +1,45 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>iniciar sesion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión</title>
   <link rel="stylesheet" href="../stylesheet.css">
   <link rel="icon" href="../imagenes/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
-<body class="inicio-de-sesion">
+<body class="inicio-de-sesion page">
 <header>
-
   <div class="container">
-    <strong><a href="../index.html" class="inicio"><img src="../imagenes/logo.png" alt="" class="logo"><img
-      src="../imagenes/img.png" alt="nombre" class="nombre"></a></strong>
-    <div class=usuario>
+    <strong>
+      <a href="../index.html" class="inicio">
+        <img src="../imagenes/logo.png" alt="Logo" class="logo">
+        <img src="../imagenes/img.png" alt="Nombre" class="nombre">
+      </a>
+    </strong>
+    <div class="usuario">
       <nav>
-        <a href="registro.html" class="login">REGISTRATE </a>
+        <a href="registro.html" class="login">REGISTRATE</a>
         <a href="inicio-de-sesion.html" class="login">LOGIN</a>
       </nav>
     </div>
   </div>
-  <br>
 </header>
 
-<br><br>
-<div class="card">
-  <img src="../imagenes/logo.png" alt="imagen.de.muestra" class="muestra">
-  <h2>Iniciar Sesion</h2>
-  <br>
-  <form class="form">
-    <label for="cuenta"></label><input
-    class="control"
-    id="cuenta"
-    placeholder="Ingrese Su Numero de Usuario"
-    required
-  >
-    <label for="pasword"></label><input
-    class="control"
-    id="pasword"
-    placeholder="Ingrese su Contraseña"
-    required
-  >
-
-    <br>
-    <div id="bars">
-      <div></div>
-    </div>
-    <div class="strength" id="strength"></div>
-    <button class="control">
-      Iniciar Sesion
-    </button>
-    <br>
-    <a href="#" id="olvido">¿Olvidaste tu Contraseña?</a>
-  </form>
-</div>
-
+<main>
+  <div class="card">
+    <img src="../imagenes/logo.png" alt="Imagen de muestra" class="muestra">
+    <h2>Iniciar Sesión</h2>
+    <form class="form">
+      <input type="text" id="cuenta" class="control" placeholder="Ingrese su número de usuario" required>
+      <input type="password" id="pasword" class="control" placeholder="Ingrese su contraseña" required>
+      <div id="bars"><div></div></div>
+      <div class="strength" id="strength"></div>
+      <button type="submit" class="control" id="control2">Iniciar Sesión</button>
+      <a href="#" id="olvido">¿Olvidaste tu contraseña?</a>
+    </form>
+  </div>
+</main>
 
 <footer>
   <div class="footer-links">
@@ -65,7 +49,7 @@
     <br>
     <a href="#">Inicio</a>
     <a href="info.html">Nosotros</a>
-    <a href="">Contacto</a>
+    <a href="#">Contacto</a>
   </div>
   <div class="copyright">
     &copy; 2025 Mi Sitio Web. Todos los derechos reservados.

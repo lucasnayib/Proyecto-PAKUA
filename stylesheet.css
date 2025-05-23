@@ -209,12 +209,9 @@ button {
     background-color: darkgoldenrod;
 }
 
-button:hover {
-    background-color: red;
-    width: 150px;
+#control2:hover{
+    background-color: goldenrod;
 }
-
-
 .muestra-1 {
     border-radius: 20px;
     width: 70%;
@@ -429,6 +426,13 @@ nav ul {
         flex-direction: column;
         text-align: center;
     }
+    .login{
+        text-align: center;
+        font-size: 10px;
+        width: 130px;
+
+
+    }
 
     .container {
         flex-direction: column;
@@ -477,9 +481,23 @@ nav ul {
         margin: 20px auto;
         width: 90%;
     }
+    .mensaje{
+        top: 17%;
+        left: 49.9%;
+    }
 
     footer {
         font-size: 16px;
     }
 
+}
+html, body.page {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.page main {
+    flex: 1;
 }

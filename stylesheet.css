@@ -1,4 +1,4 @@
-/* Estilos generales */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -16,7 +16,7 @@ body.page {
     min-height: 100vh;
 }
 
-/* Header y navegación */
+
 header {
     width: 100%;
 }
@@ -53,7 +53,7 @@ header {
     font-weight: bold;
 }
 
-/* Contenedor principal */
+
 .container {
     width: 100%;
     padding: 10px;
@@ -62,7 +62,7 @@ header {
     align-items: center;
 }
 
-/* Estilos para login/registro */
+
 a.login {
     text-decoration: none;
     padding: 8px 12px;
@@ -79,7 +79,7 @@ a.login:hover {
     background-color: gold;
 }
 
-/* Card styles */
+
 .card {
     width: 90%;
     max-width: 400px;
@@ -113,7 +113,7 @@ a.login:hover {
     font-size: 16px;
 }
 
-/* Form controls */
+
 .control {
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -148,7 +148,6 @@ button.control:hover {
     background-color: goldenrod;
 }
 
-/* Password strength indicator */
 #bars div {
     height: 6px;
     width: 0;
@@ -161,7 +160,7 @@ button.control:hover {
     width: 100%;
 }
 
-/* Galería de imágenes */
+
 .fotos {
     display: flex;
     flex-wrap: wrap;
@@ -177,7 +176,6 @@ button.control:hover {
     object-fit: cover;
 }
 
-/* Botones con imagen */
 .boton {
     text-decoration: none;
     width: 90%;
@@ -264,7 +262,7 @@ button.control:hover {
     bottom: 0;
 }
 
-/* Títulos */
+
 h1, h2, h3 {
     text-align: center;
     margin: 15px 0;
@@ -285,7 +283,7 @@ h2 {
     margin: 20px 0;
 }
 
-/* Footer */
+
 footer {
     background-color: #8B0000;
     color: white;
@@ -320,17 +318,16 @@ footer {
     color: #ccc;
 }
 
-/* Página de inicio de sesión específica */
+
 body.inicio-de-sesion {
-    background-image: url("../imagenes/logo-inicio.jpg");
+    background-image: url("./imagenes/logo-inicio.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     background-attachment: fixed;
 }
 
-/* Media Queries */
-/* Pantallas pequeñas (móviles) */
+
 @media (max-width: 576px) {
     .navbar-brand img {
         height: 30px;
@@ -373,7 +370,7 @@ body.inicio-de-sesion {
     }
 }
 
-/* Pantallas medianas (tabletas) */
+
 @media (min-width: 577px) and (max-width: 992px) {
     .contenedor-maestro {
         grid-template-columns: repeat(3, 1fr);
@@ -388,7 +385,6 @@ body.inicio-de-sesion {
     }
 }
 
-/* Pantallas grandes (escritorio) */
 @media (min-width: 993px) {
     .container {
         max-width: 1200px;
@@ -419,13 +415,11 @@ body.inicio-de-sesion {
     }
 }
 
-/* Ajustes específicos para la página principal */
 main {
     flex: 1;
     padding: 20px 0;
 }
 
-/* Ajustes para el index */
 .index-main {
     display: flex;
     flex-direction: column;
@@ -445,7 +439,6 @@ main {
     line-height: 1.5;
 }
 
-/* Ajustes para la página de información */
 .info-img {
     max-width: 100%;
     height: auto;

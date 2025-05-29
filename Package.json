@@ -1,0 +1,35 @@
+{
+  "name": "pakua-backend",
+  "version": "1.0.0",
+  "description": "Backend para la plataforma virtual de Pakua Federación Mundial",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pakua",
+    "backend",
+    "nodejs",
+    "express",
+    "mysql"
+  ],
+  "author": "Pakua Federación Mundial",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

@@ -54,14 +54,15 @@ async function createUsersTable() {
     try {
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(255) NOT NULL,
+                                                 id INT AUTO_INCREMENT PRIMARY KEY,
+                                                 nombre VARCHAR(255) NOT NULL,
                 fecha_nacimiento DATE NOT NULL,
                 numero_telefono VARCHAR(20) NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 numero_usuario INT UNIQUE NOT NULL,
+                rol ENUM('alumno', 'maestro') NOT NULL DEFAULT 'alumno',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `;
 
         await db.execute(createTableQuery);
@@ -101,7 +102,7 @@ function verificarToken(req, res, next) {
 // Ruta de registro
 app.post('/api/registro', async (req, res) => {
     try {
-        const { nombre, fecha_nacimiento, pasword, numero_telefono } = req.body;
+        const { nombre, fecha_nacimiento, pasword, numero_telefono, rol = 'alumno' } = req.body;
 
         // Validar campos requeridos
         if (!nombre || !fecha_nacimiento || !pasword || !numero_telefono) {
@@ -138,8 +139,8 @@ app.post('/api/registro', async (req, res) => {
 
         // Insertar usuario en la base de datos
         const [result] = await db.execute(
-            'INSERT INTO users (nombre, fecha_nacimiento, numero_telefono, password, numero_usuario) VALUES (?, ?, ?, ?, ?)',
-            [nombre, fecha_nacimiento, numero_telefono, hashedPassword, numeroUsuario]
+            'INSERT INTO users (nombre, fecha_nacimiento, numero_telefono, password, numero_usuario, rol) VALUES (?, ?, ?, ?, ?, ?)',
+            [nombre, fecha_nacimiento, numero_telefono, hashedPassword, numeroUsuario, rol]
         );
 
         // Crear token JWT
@@ -147,7 +148,8 @@ app.post('/api/registro', async (req, res) => {
             {
                 id: result.insertId,
                 numeroUsuario: numeroUsuario,
-                nombre: nombre
+                nombre: nombre,
+                rol: rol
             },
             JWT_SECRET,
             { expiresIn: '24h' }
@@ -159,7 +161,8 @@ app.post('/api/registro', async (req, res) => {
             data: {
                 token: token,
                 numeroUsuario: numeroUsuario,
-                nombre: nombre
+                nombre: nombre,
+                rol: rol
             }
         });
 
@@ -224,7 +227,8 @@ app.post('/api/login', async (req, res) => {
             {
                 id: user.id,
                 numeroUsuario: user.numero_usuario,
-                nombre: user.nombre
+                nombre: user.nombre,
+                rol: user.rol
             },
             JWT_SECRET,
             { expiresIn: '24h' }
@@ -236,7 +240,8 @@ app.post('/api/login', async (req, res) => {
             data: {
                 token: token,
                 numeroUsuario: user.numero_usuario,
-                nombre: user.nombre
+                nombre: user.nombre,
+                rol: user.rol
             }
         });
 
@@ -257,7 +262,8 @@ app.get('/api/verify', verificarToken, (req, res) => {
         data: {
             id: req.user.id,
             numeroUsuario: req.user.numeroUsuario,
-            nombre: req.user.nombre
+            nombre: req.user.nombre,
+            rol: req.user.rol
         }
     });
 });
@@ -266,7 +272,7 @@ app.get('/api/verify', verificarToken, (req, res) => {
 app.get('/api/user', verificarToken, async (req, res) => {
     try {
         const [rows] = await db.execute(
-            'SELECT id, nombre, fecha_nacimiento, numero_telefono, numero_usuario, created_at FROM users WHERE id = ?',
+            'SELECT id, nombre, fecha_nacimiento, numero_telefono, numero_usuario, rol, created_at FROM users WHERE id = ?',
             [req.user.id]
         );
 
@@ -297,6 +303,69 @@ app.post('/api/logout', (req, res) => {
         success: true,
         message: 'Logout exitoso'
     });
+});
+
+// Ruta para enviar mensajes a alumnos (solo maestros)
+app.post('/api/enviar-mensaje', verificarToken, async (req, res) => {
+    try {
+        // Verificar si es maestro
+        if (req.user.rol !== 'maestro') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso no autorizado'
+            });
+        }
+
+        const { alumnoId, mensaje } = req.body;
+
+        // Aquí iría la lógica para enviar el mensaje
+        // (guardar en base de datos, enviar notificación, etc.)
+
+        // Simulación de envío exitoso
+        console.log(`Mensaje enviado a alumno ID ${alumnoId}: ${mensaje}`);
+
+        res.json({
+            success: true,
+            message: 'Mensaje enviado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al enviar mensaje:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para obtener lista de alumnos (solo maestros)
+app.get('/api/alumnos', verificarToken, async (req, res) => {
+    try {
+        // Verificar si es maestro
+        if (req.user.rol !== 'maestro') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso no autorizado'
+            });
+        }
+
+        // Obtener lista de alumnos
+        const [rows] = await db.execute(
+            'SELECT id, nombre, numero_usuario FROM users WHERE rol = "alumno"'
+        );
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+        console.error('Error al obtener alumnos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
 });
 
 // Manejo de errores 404

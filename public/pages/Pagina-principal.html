@@ -31,6 +31,20 @@
           <li class="nav-item"><a class="nav-link" href="#">CALENDARIO</a></li>
           <li class="nav-item"><a class="nav-link" href="#">ARANCELES</a></li>
           <li class="nav-item"><a class="nav-link" href="#">ACTIVIDAD</a></li>
+          <!-- Información del usuario y botón de cerrar sesión -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user me-1"></i>
+              <span id="user-name">Usuario</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><span class="dropdown-item-text small" id="user-info-dropdown">Cargando...</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+              </a></li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
@@ -48,8 +62,20 @@
     <div class="item" id="asistencia"><h1>REGISTRA TU ASISTENCIA</h1></div>
     <div class="item" id="arranceles"><h1>ARANCELES</h1></div>
     <div class="item" id="calendario"><h1>CALENDARIO DE CLASES</h1></div>
+
     <div class="item" id="consultas"><h1>CONSULTA CON TU MAESTRO</h1></div>
     <div class="item" id="reservas"><h1>RESERVA UN MASAJE</h1></div>
+    <div class="item maestro-only" id="gestion-alumnos" style="display: none;">
+      <h1>GESTIÓN DE ALUMNOS</h1>
+      <div id="lista-alumnos" class="mt-3"></div>
+      <button class="btn btn-primary mt-2" onclick="cargarAlumnos()">
+        Cargar alumnos
+      </button>
+    </div>
+
+    <div class="item maestro-only" id="enviar-noticias" style="display: none;">
+      <h1>ENVIAR NOTICIAS</h1>
+    </div>
   </div>
 </main>
 
@@ -69,5 +95,45 @@
 </footer>
 <script src="../auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Función para mostrar información del usuario en el header
+  function mostrarInfoUsuarioHeader() {
+    const userData = localStorage.getItem('pakua_user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userNameElement = document.getElementById('user-name');
+      const userInfoDropdown = document.getElementById('user-info-dropdown');
+
+      if (userNameElement) {
+        userNameElement.textContent = user.nombre;
+      }
+
+      if (userInfoDropdown) {
+        userInfoDropdown.innerHTML = `
+          <strong>${user.nombre}</strong><br>
+          <small>Usuario: ${user.numeroUsuario}</small><br>
+          <small>Rol: ${user.rol === 'maestro' ? 'Maestro' : 'Alumno'}</small>
+        `;
+      }
+    }
+  }
+
+  // Mostrar información de usuario y opciones de maestro
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar info del usuario en el header
+    mostrarInfoUsuarioHeader();
+
+    const user = JSON.parse(localStorage.getItem('pakua_user') || '{}');
+    console.log("Usuario:", user);
+
+    if (user.rol === 'maestro') {
+      console.log("Es maestro, mostrando elementos");
+      document.querySelectorAll('.maestro-only').forEach(el => {
+        console.log("Mostrando elemento:", el.id);
+        el.style.display = 'block';
+      });
+    }
+  });
+</script>
 </body>
 </html>

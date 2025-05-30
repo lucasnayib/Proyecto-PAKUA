@@ -4,15 +4,14 @@ const API_BASE_URL = 'http://localhost:3000/api';
 // Función para manejar el registro
 async function manejarRegistro(event) {
     event.preventDefault();
-
-    const form = event.target;
-    const formData = new FormData(form);
-
+    const rol = document.getElementById('rol') ? document.getElementById('rol').value : 'alumno';
     const userData = {
         nombre: document.getElementById('nombre').value.trim(),
         fecha_nacimiento: document.getElementById('fecha_de_nacimiento').value,
         pasword: document.getElementById('pasword').value,
-        numero_telefono: document.getElementById('numero_de_telefono').value.trim()
+        numero_telefono: document.getElementById('numero_de_telefono').value.trim(),
+        rol: rol
+
     };
 
     // Validaciones básicas
@@ -44,7 +43,8 @@ async function manejarRegistro(event) {
             localStorage.setItem('pakua_token', result.data.token);
             localStorage.setItem('pakua_user', JSON.stringify({
                 numeroUsuario: result.data.numeroUsuario,
-                nombre: result.data.nombre
+                nombre: result.data.nombre,
+                rol: result.data.rol  // ← Asegúrate de incluir esto
             }));
 
             mostrarMensaje(`¡Registro exitoso! Tu número de usuario es: ${result.data.numeroUsuario}`, 'success');
@@ -144,7 +144,7 @@ async function verificarAutenticacion() {
 function logout() {
     localStorage.removeItem('pakua_token');
     localStorage.removeItem('pakua_user');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 }
 
 // Función para proteger páginas que requieren autenticación
@@ -165,33 +165,30 @@ async function protegerPagina() {
 // Función para mostrar información del usuario en la página principal
 function mostrarInfoUsuario() {
     const userData = localStorage.getItem('pakua_user');
-
     if (userData) {
         const user = JSON.parse(userData);
         const welcomeMessage = document.createElement('div');
         welcomeMessage.className = 'welcome-message';
+
+        // Añadir esta verificación de rol
+        const isMaestro = user.rol === 'maestro';
+
         welcomeMessage.innerHTML = `
             <h3>¡Bienvenido, ${user.nombre}!</h3>
             <p>Número de usuario: ${user.numeroUsuario}</p>
+            <p>Rol: ${isMaestro ? 'Maestro' : 'Alumno'}</p>
             <button onclick="logout()" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
         `;
-        welcomeMessage.style.cssText = `
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px auto;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        `;
 
-        const main = document.querySelector('main');
-        if (main) {
-            main.insertBefore(welcomeMessage, main.firstChild);
+        // Mostrar elementos de maestro si corresponde
+        if (isMaestro) {
+            const maestroElements = document.querySelectorAll('.maestro-only');
+            maestroElements.forEach(el => {
+                el.style.display = 'block'; // Cambiar a 'flex' si usas flexbox
+            });
         }
     }
 }
-
 // Función para mostrar mensajes al usuario
 function mostrarMensaje(mensaje, tipo = 'info') {
     // Remover mensaje anterior si existe
@@ -238,7 +235,7 @@ function mostrarMensaje(mensaje, tipo = 'info') {
         if (div.parentNode) {
             div.remove();
         }
-    }, 5000);
+    }, 3000);
 }
 
 // Función para mostrar/ocultar indicador de carga
@@ -283,16 +280,26 @@ document.addEventListener('DOMContentLoaded', function() {
         formRegistro.addEventListener('submit', manejarLogin);
     }
 
-    // Para la página principal - verificar autenticación
     if (window.location.pathname.includes('Pagina-principal.html')) {
         protegerPagina().then(isAuthenticated => {
             if (isAuthenticated) {
                 mostrarInfoUsuario();
+
+                // Mostrar opciones de maestro si corresponde
+                const userData = localStorage.getItem('pakua_user');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    if (user.rol === 'maestro') {
+                        const maestroElements = document.querySelectorAll('.maestro-only');
+                        maestroElements.forEach(el => {
+                            el.style.display = 'block';
+                        });
+                    }
+                }
             }
         });
     }
 });
-
 // Exportar funciones para uso global
 window.manejarRegistro = manejarRegistro;
 window.manejarLogin = manejarLogin;

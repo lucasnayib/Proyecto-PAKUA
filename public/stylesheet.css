@@ -231,6 +231,21 @@ button.control:hover {
     margin: 20px;
     padding: 0 10px;
 }
+#calendario{
+    background-image: url("imagenes/calendario.jpg");
+}
+#asistencia{
+    background-image: url("imagenes/asistencia.jpg");
+}
+#arranceles{
+    background-image: url("imagenes/aranceles..jpg");
+}
+#consultas{
+    background-image: url("imagenes/muestra1.jpg");
+}
+#reservas{
+    background-image: url("imagenes/masajes.jpg");
+}
 
 .item {
     border: 1px solid black;

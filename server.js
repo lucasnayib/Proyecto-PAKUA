@@ -12,6 +12,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'pakua_secret_key_2025';
 
 // Middleware
 app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/auth.js', express.static(path.join(__dirname, 'auth.js')));
+app.use('/stylesheet.css', express.static(path.join(__dirname, 'stylesheet.css')));
+app.use('/imagenes', express.static(path.join(__dirname, 'imagenes')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -40,8 +44,9 @@ async function initializeDatabase() {
         console.log('Conectado a la base de datos MySQL');
         connection.release();
 
-        // Crear tabla de usuarios si no existe
+        // Crear tablas si no existen
         await createUsersTable();
+        await createMessagesTable();
 
     } catch (error) {
         console.error('Error al conectar con la base de datos:', error.message);
@@ -70,6 +75,31 @@ async function createUsersTable() {
 
     } catch (error) {
         console.error('Error al crear tabla:', error.message);
+    }
+}
+
+// Crear tabla de mensajes
+async function createMessagesTable() {
+    try {
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS mensajes (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    id_emisor INT NOT NULL,
+                                                    id_receptor INT NOT NULL,
+                                                    mensaje TEXT NOT NULL,
+                                                    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                    leido BOOLEAN DEFAULT FALSE,
+                                                    asunto VARCHAR(255) DEFAULT NULL,
+                es_urgente BOOLEAN DEFAULT FALSE,
+                FOREIGN KEY (id_emisor) REFERENCES users(id),
+                FOREIGN KEY (id_receptor) REFERENCES users(id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `;
+
+        await db.execute(createTableQuery);
+        console.log('Tabla de mensajes creada/verificada');
+    } catch (error) {
+        console.error('Error al crear tabla de mensajes:', error.message);
     }
 }
 
@@ -316,17 +346,28 @@ app.post('/api/enviar-mensaje', verificarToken, async (req, res) => {
             });
         }
 
-        const { alumnoId, mensaje } = req.body;
+        const { alumnoId, mensaje, asunto = '', esUrgente = false } = req.body;
 
-        // Aquí iría la lógica para enviar el mensaje
-        // (guardar en base de datos, enviar notificación, etc.)
+        // Validar mensaje
+        if (!mensaje || mensaje.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'El mensaje no puede estar vacío'
+            });
+        }
 
-        // Simulación de envío exitoso
-        console.log(`Mensaje enviado a alumno ID ${alumnoId}: ${mensaje}`);
+        // Guardar en base de datos
+        const [result] = await db.execute(
+            'INSERT INTO mensajes (id_emisor, id_receptor, mensaje, asunto, es_urgente) VALUES (?, ?, ?, ?, ?)',
+            [req.user.id, alumnoId, mensaje.trim(), asunto.trim(), esUrgente]
+        );
 
         res.json({
             success: true,
-            message: 'Mensaje enviado correctamente'
+            message: 'Mensaje enviado correctamente',
+            data: {
+                id: result.insertId
+            }
         });
 
     } catch (error) {
@@ -340,6 +381,7 @@ app.post('/api/enviar-mensaje', verificarToken, async (req, res) => {
 
 // Ruta para obtener lista de alumnos (solo maestros)
 app.get('/api/alumnos', verificarToken, async (req, res) => {
+
     try {
         // Verificar si es maestro
         if (req.user.rol !== 'maestro') {
@@ -349,9 +391,9 @@ app.get('/api/alumnos', verificarToken, async (req, res) => {
             });
         }
 
-        // Obtener lista de alumnos
+        // Obtener lista de alumnos con más información
         const [rows] = await db.execute(
-            'SELECT id, nombre, numero_usuario FROM users WHERE rol = "alumno"'
+            'SELECT id, nombre, numero_usuario, numero_telefono FROM users WHERE rol = "alumno"'
         );
 
         res.json({
@@ -367,8 +409,167 @@ app.get('/api/alumnos', verificarToken, async (req, res) => {
         });
     }
 });
+// Añadir después de /api/alumnos
+app.get('/api/maestros', verificarToken, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id, nombre FROM users WHERE rol = "maestro"'
+        );
 
-// Manejo de errores 404
+        res.json({
+            success: true,
+            data: rows
+        });
+    } catch (error) {
+        console.error('Error al obtener maestros:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para obtener mensajes de un alumno
+app.get('/api/mensajes/:alumnoId', verificarToken, async (req, res) => {
+    try {
+        if (req.user.rol !== 'maestro') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso no autorizado'
+            });
+        }
+
+        const alumnoId = req.params.alumnoId;
+
+        // Obtener mensajes, incluyendo el nombre del emisor
+        const [rows] = await db.execute(
+            `SELECT m.id, m.asunto, m.mensaje, m.fecha_envio, m.leido, m.es_urgente, u.nombre AS nombre_emisor
+             FROM mensajes m
+                      JOIN users u ON m.id_emisor = u.id
+             WHERE m.id_receptor = ?
+             ORDER BY m.fecha_envio DESC`,
+            [alumnoId]
+        );
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+        console.error('Error al obtener mensajes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para obtener alumnos con mensajes recientes
+app.get('/api/alumnos-con-mensajes', verificarToken, async (req, res) => {
+    try {
+        if (req.user.rol !== 'maestro') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso no autorizado'
+            });
+        }
+
+        // Obtener alumnos con contadores de mensajes y no leídos
+        const [rows] = await db.execute(`
+            SELECT u.id, u.nombre, u.numero_usuario,
+                   COUNT(m.id) AS total_mensajes,
+                   SUM(CASE WHEN m.leido = 0 THEN 1 ELSE 0 END) AS mensajes_no_leidos
+            FROM users u
+                     LEFT JOIN mensajes m ON u.id = m.id_receptor
+            WHERE u.rol = 'alumno'
+            GROUP BY u.id
+            ORDER BY u.nombre
+        `);
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+        console.error('Error al obtener alumnos con mensajes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para obtener mensajes del alumno (MOVIDA ANTES DEL MIDDLEWARE 404)
+app.get('/api/mis-mensajes', verificarToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Obtener mensajes del alumno con nombre del maestro
+        const [rows] = await db.execute(
+            `SELECT m.id, m.asunto, m.mensaje, m.fecha_envio, m.leido, m.es_urgente, u.nombre AS maestro_nombre 
+             FROM mensajes m
+             JOIN users u ON m.id_emisor = u.id
+             WHERE m.id_receptor = ? 
+             ORDER BY m.fecha_envio DESC`,
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+        console.error('Error al obtener mensajes del alumno:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para marcar mensaje como leído (MOVIDA ANTES DEL MIDDLEWARE 404)
+app.put('/api/marcar-leido/:mensajeId', verificarToken, async (req, res) => {
+    try {
+        const mensajeId = req.params.mensajeId;
+        const userId = req.user.id;
+
+        // Verificar que el mensaje pertenece al usuario
+        const [mensaje] = await db.execute(
+            'SELECT * FROM mensajes WHERE id = ? AND id_receptor = ?',
+            [mensajeId, userId]
+        );
+
+        if (mensaje.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mensaje no encontrado'
+            });
+        }
+
+        // Actualizar estado a leído
+        await db.execute(
+            'UPDATE mensajes SET leido = TRUE WHERE id = ?',
+            [mensajeId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Mensaje marcado como leído'
+        });
+
+    } catch (error) {
+        console.error('Error al marcar mensaje como leído:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Manejo de errores 404 (DEBE IR AL FINAL DE TODAS LAS RUTAS)
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -408,4 +609,55 @@ process.on('SIGINT', async () => {
 startServer().catch(error => {
     console.error('Error al iniciar el servidor:', error);
     process.exit(1);
+});
+// Añadir después de la ruta /api/marcar-leido/:mensajeId
+app.post('/api/enviar-respuesta', verificarToken, async (req, res) => {
+    try {
+        const { mensajeOriginalId, mensaje, asunto = '', esUrgente = false } = req.body;
+        const userId = req.user.id;
+
+        // Validar mensaje
+        if (!mensaje || mensaje.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'El mensaje no puede estar vacío'
+            });
+        }
+
+        // Obtener el mensaje original para saber el maestro
+        const [mensajeOriginal] = await db.execute(
+            'SELECT id_emisor FROM mensajes WHERE id = ?',
+            [mensajeOriginalId]
+        );
+
+        if (mensajeOriginal.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mensaje original no encontrado'
+            });
+        }
+
+        const maestroId = mensajeOriginal[0].id_emisor;
+
+        // Guardar respuesta en base de datos
+        const [result] = await db.execute(
+            'INSERT INTO mensajes (id_emisor, id_receptor, mensaje, asunto, es_urgente) VALUES (?, ?, ?, ?, ?)',
+            [userId, maestroId, mensaje.trim(), asunto.trim(), esUrgente]
+        );
+
+        res.json({
+            success: true,
+            message: 'Respuesta enviada correctamente',
+            data: {
+                id: result.insertId
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al enviar respuesta:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
 });

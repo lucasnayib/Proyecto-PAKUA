@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/html">
+<head>
+    <script src="../auth.js"></script>
+    <meta charset="UTF-8">
+    <title>Mis Mensajes - Pakua</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../stylesheet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="icon" href="imagenes/logo.png" type="image/png">
+    <style>
+        .mensaje-no-leido {
+            border-left: 4px solid #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .mensaje-urgente {
+            border-left: 4px solid #dc3545;
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <!-- Mismo header que en otras páginas -->
+</header>
+
+<main class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0"><i class="fas fa-envelope me-2"></i> Mis Mensajes</h2>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary active" data-filter="todos">Todos</button>
+                    <button class="btn btn-outline-primary" data-filter="no-leidos">No leídos</button>
+                    <button class="btn btn-outline-primary" data-filter="urgentes">Urgentes</button>
+                </div>
+                <button class="btn btn-success" id="btn-nuevo-mensaje">
+                    <i class="fas fa-plus me-1"></i> Nuevo Mensaje
+                </button>
+            </div>
+
+            <div id="lista-mensajes">
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                    <p class="mt-2">Cargando mensajes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para ver/responder mensajes -->
+<div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>De:</strong> <span id="modalDe"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Fecha:</strong> <span id="modalFecha"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Estado:</strong> <span id="modalEstado"></span>
+                </div>
+                <hr>
+                <div id="modalContenido" class="mb-4"></div>
+
+                <h6>Responder:</h6>
+                <textarea id="respuestaMensaje" class="form-control" rows="4"
+                          placeholder="Escribe tu respuesta aquí..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btn-responder">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar Respuesta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo mensaje -->
+<div class="modal fade" id="modalNuevoMensaje" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-envelope me-2"></i> Nuevo Mensaje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Para:</label>
+                    <select id="selectMaestro" class="form-select">
+                        <option value="">Seleccionar maestro</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Asunto:</label>
+                    <input type="text" id="nuevoAsunto" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mensaje:</label>
+                    <textarea id="nuevoMensaje" class="form-control" rows="5"></textarea>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="nuevoUrgente" class="form-check-input">
+                    <label class="form-check-label" for="nuevoUrgente">Marcar como urgente</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-enviar-mensaje">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar Mensaje
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <!-- Mismo footer que en otras páginas -->
+</footer>
+
+<script src="auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Variables globales
+    let mensajes = [];
+    let mensajeActual = null;
+    const modalMensaje = new bootstrap.Modal('#modalMensaje');
+    const modalNuevoMensaje = new bootstrap.Modal('#modalNuevoMensaje');
+
+    // Cargar mensajes del alumno
+    async function cargarMensajes() {
+        try {
+            mostrarCargando(true);
+            const token = localStorage.getItem('pakua_token');
+            const response = await fetch(`${API_BASE_URL}/mis-mensajes`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                mensajes = result.data;
+                mostrarMensajes();
+            } else {
+                mostrarMensaje('Error al cargar mensajes: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarMensaje('Error de conexión', 'error');
+        } finally {
+            mostrarCargando(false);
+        }
+    }
+
+    // Mostrar mensajes en la lista
+    function mostrarMensajes(filtro = 'todos') {
+        const lista = document.getElementById('lista-mensajes');
+        if (mensajes.length === 0) {
+            lista.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted"></i>
+                    <p class="mt-3">No tienes mensajes</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        const mensajesFiltrados = mensajes.filter(m => {
+            if (filtro === 'no-leidos') return !m.leido;
+            if (filtro === 'urgentes') return m.es_urgente;
+            return true;
+        });
+
+        mensajesFiltrados.forEach(msg => {
+            const fecha = new Date(msg.fecha_envio).toLocaleString();
+            const claseUrgente = msg.es_urgente ? 'mensaje-urgente' : '';
+            const claseNoLeido = !msg.leido ? 'mensaje-no-leido' : '';
+
+            html += `
+                <div class="card mb-2 ${claseUrgente} ${claseNoLeido} cursor-pointer"
+                     data-id="${msg.id}" onclick="verMensaje(${msg.id})">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 class="card-title">${msg.asunto || 'Sin asunto'}</h5>
+                                <p class="card-text text-muted">De: ${msg.maestro_nombre}</p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">${fecha}</small>
+                                <div>
+                                    ${!msg.leido ? '<span class="badge bg-primary">Nuevo</span>' : ''}
+                                    ${msg.es_urgente ? '<span class="badge bg-danger ms-1">Urgente</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        lista.innerHTML = html;
+    }
+
+    // Ver mensaje completo
+    async function verMensaje(id) {
+        mensajeActual = mensajes.find(m => m.id === id);
+        if (!mensajeActual) return;
+
+        // Actualizar estado a leído si no lo está
+        if (!mensajeActual.leido) {
+            await marcarComoLeido(id);
+            mensajeActual.leido = true;
+        }
+
+        // Llenar modal
+        document.getElementById('modalTitulo').textContent = mensajeActual.asunto || 'Sin asunto';
+        document.getElementById('modalDe').textContent = mensajeActual.maestro_nombre;
+        document.getElementById('modalFecha').textContent = new Date(mensajeActual.fecha_envio).toLocaleString();
+        document.getElementById('modalEstado').innerHTML = `
+            ${mensajeActual.es_urgente ? '<span class="badge bg-danger">Urgente</span> ' : ''}
+            ${mensajeActual.leido ? '<span class="badge bg-success">Leído</span>' : '<span class="badge bg-warning">No leído</span>'}
+        `;
+        document.getElementById('modalContenido').textContent = mensajeActual.mensaje;
+        document.getElementById('respuestaMensaje').value = '';
+
+        // Mostrar modal
+        modalMensaje.show();
+    }
+
+    // Enviar respuesta
+    async function enviarRespuesta() {
+        const respuesta = document.getElementById('respuestaMensaje').value.trim();
+        if (!respuesta) {
+            mostrarMensaje('Debes escribir una respuesta', 'error');
+            return;
+        }
+
+        try {
+            mostrarCargando(true);
+            const token = localStorage.getItem('pakua_token');
+
+            const response = await fetch(`${API_BASE_URL}/enviar-respuesta`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    mensajeOriginalId: mensajeActual.id,
+                    mensaje: respuesta,
+                    asunto: 'Re: ' + (mensajeActual.asunto || 'Sin asunto')
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                mostrarMensaje('Respuesta enviada correctamente', 'success');
+                modalMensaje.hide();
+                cargarMensajes();
+            } else {
+                mostrarMensaje('Error al enviar respuesta: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarMensaje('Error de conexión', 'error');
+        } finally {
+            mostrarCargando(false);
+        }
+    }
+
+    // Cargar maestros para nuevo mensaje
+    async function cargarMaestrosParaNuevoMensaje() {
+        const select = document.getElementById('selectMaestro');
+        select.innerHTML = '<option value="">Seleccionar maestro</option>';
+
+        const maestros = await cargarMaestros();
+        maestros.forEach(maestro => {
+            const option = document.createElement('option');
+            option.value = maestro.id;
+            option.textContent = maestro.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    // Enviar nuevo mensaje a maestro
+    async function enviarNuevoMensaje() {
+        const maestroId = document.getElementById('selectMaestro').value;
+        const asunto = document.getElementById('nuevoAsunto').value.trim();
+        const mensaje = document.getElementById('nuevoMensaje').value.trim();
+        const urgente = document.getElementById('nuevoUrgente').checked;
+
+        if (!maestroId) {
+            mostrarMensaje('Debes seleccionar un maestro', 'error');
+            return;
+        }
+
+        if (!mensaje) {
+            mostrarMensaje('Debes escribir un mensaje', 'error');
+            return;
+        }
+
+        try {
+            mostrarCargando(true);
+            const token = localStorage.getItem('pakua_token');
+
+            const response = await fetch(`${API_BASE_URL}/enviar-mensaje`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    alumnoId: maestroId, // En este caso el alumno es el emisor
+                    mensaje: mensaje,
+                    asunto: asunto,
+                    esUrgente: urgente
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                mostrarMensaje('Mensaje enviado correctamente', 'success');
+                modalNuevoMensaje.hide();
+                cargarMensajes();
+            } else {
+                mostrarMensaje('Error al enviar mensaje: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarMensaje('Error de conexión', 'error');
+        } finally {
+            mostrarCargando(false);
+        }
+    }
+
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Verificar autenticación
+        const autenticado = await protegerPagina();
+        if (!autenticado) return;
+
+        // Verificar rol (solo alumnos)
+        const user = JSON.parse(localStorage.getItem('pakua_user'));
+        if (user.rol !== 'alumno') {
+            mostrarMensaje('Esta sección es solo para alumnos', 'error');
+            setTimeout(() => window.location.href = 'Pagina-principal.html', 2000);
+            return;
+        }
+
+        // Configurar eventos
+        document.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                mostrarMensajes(btn.dataset.filter);
+            });
+        });
+
+        document.getElementById('btn-responder').addEventListener('click', enviarRespuesta);
+        document.getElementById('btn-nuevo-mensaje').addEventListener('click', () => {
+            cargarMaestrosParaNuevoMensaje();
+            modalNuevoMensaje.show();
+        });
+        document.getElementById('btn-enviar-mensaje').addEventListener('click', enviarNuevoMensaje);
+
+        // Cargar mensajes iniciales
+        cargarMensajes();
+    });
+
+    // Exportar funciones para HTML
+    window.verMensaje = verMensaje;
+</script>
+</body>
+</html>

@@ -468,3 +468,18 @@ main {
     line-height: 1.6;
     margin-bottom: 20px;
 }
+#mis-mensajes{
+    background-image: url("imagenes/icono-mensajes.jpg");
+    background-size:100px 100px ;
+    background-repeat: no-repeat;
+}
+.mensaje {
+   text-decoration: none;
+    font-family: "Times New Roman", serif;
+    color: white;
+    font-weight: bold;
+
+}
+#btn-nuevo-mensaje{
+    margin: 10px;
+}

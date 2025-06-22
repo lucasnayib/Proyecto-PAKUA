@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservar Masaje - Pakua</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../stylesheet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="icon" href="../imagenes/logo.png" type="image/png">
+</head>
+
+<body>
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="../index.html">
+        <img src="../imagenes/logo.png" alt="logo" class="me-2">
+        <img src="../imagenes/img.png" alt="nombre" class="nombre">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuHamburguesa"
+              aria-controls="menuHamburguesa" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="menuHamburguesa">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="Pagina-principal.html">INICIO</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">CURSOS</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">CLASES</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">ACTIVIDAD</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user me-1"></i>
+              <span id="user-name">Usuario</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><span class="dropdown-item-text small" id="user-info-dropdown">Cargando...</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+              </a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="container-fluid px-0">  <!-- Container fluido sin padding horizontal -->
+  <div class="row mx-0 justify-content-center">  <!-- Sin márgenes laterales -->
+    <div class="col-12 col-md-11 col-lg-10 col-xl-9 px-4">  <!-- Columnas casi completas -->
+      <div class="card border-0 shadow-lg">  <!-- Sin bordes, con sombra -->
+        <div class="card-header bg-primary text-white text-center py-3">
+          <h2 class="mb-0 display-5"><i class="fas fa-spa me-2"></i>Reservar Masaje</h2>  <!-- Título más grande -->
+        </div>
+        <div class="card-body p-5">  <!-- Más padding interno -->
+          <form id="form-reserva-masaje" class="wide-form">  <!-- Clase adicional -->
+
+            <!-- Fila de Fecha y Hora - Controles expandidos -->
+            <div class="row mb-4 gx-5">  <!-- Más espacio entre columnas -->
+              <div class="col-md-6">
+                <label for="fecha-reserva" class="form-label fs-5">
+                  <i class="fas fa-calendar me-1"></i>Fecha preferida:
+                </label>
+                <input type="date" id="fecha-reserva" class="form-control form-control-lg py-3" required>  <!-- Más alto -->
+              </div>
+              <div class="col-md-6">
+                <label for="hora-reserva" class="form-label fs-5">
+                  <i class="fas fa-clock me-1"></i>Hora preferida:
+                </label>
+                <select id="hora-reserva" class="form-select form-select-lg py-3" required>
+                  <option value="">Selecciona una hora</option>
+                  <!-- opciones... -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Sección expandida para Tipo de Masaje -->
+            <div class="mb-4">
+              <label for="tipo-masaje" class="form-label fs-5">
+                <i class="fas fa-hands me-1"></i>Tipo de masaje:
+              </label>
+              <select id="tipo-masaje" class="form-select form-select-lg py-3" required>
+                <option value="">Selecciona el tipo de masaje</option>
+                <!-- opciones... -->
+              </select>
+            </div>
+
+            <!-- Más espacio para Duración -->
+            <div class="mb-4">
+              <label for="duracion-masaje" class="form-label fs-5">
+                <i class="fas fa-hourglass-half me-1"></i>Duración:
+              </label>
+              <select id="duracion-masaje" class="form-select form-select-lg py-3" required>
+                <option value="">Selecciona la duración</option>
+                <!-- opciones... -->
+              </select>
+            </div>
+
+            <!-- Zonas del cuerpo - Distribución mejorada -->
+            <div class="mb-4">
+              <label class="form-label fs-5">
+                <i class="fas fa-user-md me-1"></i>Zona del cuerpo a tratar:
+              </label>
+              <div class="row gx-4 gy-3">  <!-- Espaciado uniforme -->
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="espalda" id="zona-espalda" style="transform: scale(1.5); margin-right: 10px;">
+                    <label class="form-check-label fs-5" for="zona-espalda">Espalda</label>
+                  </div>
+                  <!-- más checkboxes... -->
+                </div>
+                <div class="col-md-6">
+                  <!-- checkboxes... -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Observaciones - Textarea expandido -->
+            <div class="mb-4">
+              <label for="observaciones" class="form-label fs-5">
+                <i class="fas fa-comment me-1"></i>Observaciones o solicitudes especiales:
+              </label>
+              <textarea id="observaciones" class="form-control form-control-lg py-3" rows="5"
+                        placeholder="Menciona cualquier condición médica, lesión o preferencia especial..."></textarea>
+            </div>
+
+            <!-- Teléfono - Input expandido -->
+            <div class="mb-4">
+              <label for="telefono-contacto" class="form-label fs-5">
+                <i class="fas fa-phone me-1"></i>Teléfono de contacto:
+              </label>
+              <input type="tel" id="telefono-contacto" class="form-control form-control-lg py-3"
+                     placeholder="Número para confirmar la cita" required>
+            </div>
+
+            <!-- Checkbox urgente - Más destacado -->
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="urgente-reserva" style="transform: scale(1.5); margin-right: 10px;">
+              <label class="form-check-label fs-5 fw-bold" for="urgente-reserva">
+                <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                Marcar como urgente (lesión o dolor)
+              </label>
+            </div>
+
+            <!-- Botones - Más grandes y con mejor espaciado -->
+            <div class="d-flex justify-content-between mt-5">
+              <button type="button" class="btn btn-secondary btn-lg px-5 py-3" onclick="window.history.back()">
+                <i class="fas fa-arrow-left me-2"></i>Volver
+              </button>
+              <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                <i class="fas fa-paper-plane me-2"></i>Enviar Reserva
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://www.instagram.com/explore/" id="red1"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.facebook.com/" id="red2"><i class="fa-brands fa-square-facebook"></i></a>
+    <a href="https://www.youtube.com/" id="red3"><i class="fa-brands fa-youtube"></i></a>
+    <br>
+    <a href="../index.html">Inicio</a>
+    <a href="info.html">Nosotros</a>
+    <a href="#">Contacto</a>
+  </div>
+  <div class="copyright">
+    &copy; 2025 Pakua Federación Mundial. Todos los derechos reservados.
+  </div>
+</footer>
+
+<script src="../auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Proteger la página
+    protegerPagina().then(isAuthenticated => {
+      if (isAuthenticated) {
+        mostrarInfoUsuarioHeader();
+        configurarFechaMinima();
+      }
+    });
+
+    // Configurar fecha mínima (hoy)
+    function configurarFechaMinima() {
+      const fechaInput = document.getElementById('fecha-reserva');
+      const today = new Date().toISOString().split('T')[0];
+      fechaInput.min = today;
+    }
+
+    // Mostrar información del usuario en el header
+    function mostrarInfoUsuarioHeader() {
+      const userData = localStorage.getItem('pakua_user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        const userNameElement = document.getElementById('user-name');
+        const userInfoDropdown = document.getElementById('user-info-dropdown');
+        const telefonoInput = document.getElementById('telefono-contacto');
+
+        if (userNameElement) {
+          userNameElement.textContent = user.nombre;
+        }
+
+        if (userInfoDropdown) {
+          userInfoDropdown.innerHTML = `
+                    <strong>${user.nombre}</strong><br>
+                    <small>Usuario: ${user.numeroUsuario}</small><br>
+                    <small>Rol: ${user.rol === 'maestro' ? 'Maestro' : 'Alumno'}</small>
+                `;
+        }
+
+        // Pre-llenar teléfono si está disponible
+        if (telefonoInput && user.numero_telefono) {
+          telefonoInput.value = user.numero_telefono;
+        }
+      }
+    }
+
+    // Manejar envío del formulario
+    document.getElementById('form-reserva-masaje').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      await enviarReservaMasaje();
+    });
+  });
+
+  // Función para enviar la reserva de masaje
+  async function enviarReservaMasaje() {
+    // Obtener valores del formulario
+    const fecha = document.getElementById('fecha-reserva').value;
+    const hora = document.getElementById('hora-reserva').value;
+    const tipoMasaje = document.getElementById('tipo-masaje').value;
+    const duracion = document.getElementById('duracion-masaje').value;
+    const observaciones = document.getElementById('observaciones').value.trim();
+    const telefono = document.getElementById('telefono-contacto').value.trim();
+    const esUrgente = document.getElementById('urgente-reserva').checked;
+
+    // Obtener zonas seleccionadas
+    const zonasCheckboxes = document.querySelectorAll('input[type="checkbox"][value]:not(#urgente-reserva)');
+    const zonasSeleccionadas = [];
+    zonasCheckboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        zonasSeleccionadas.push(checkbox.value);
+      }
+    });
+
+    // Validaciones
+    if (!fecha || !hora || !tipoMasaje || !duracion || !telefono) {
+      mostrarMensaje('Por favor completa todos los campos obligatorios', 'error');
+      return;
+    }
+
+    if (zonasSeleccionadas.length === 0) {
+      mostrarMensaje('Selecciona al menos una zona del cuerpo a tratar', 'error');
+      return;
+    }
+
+    // Validar que la fecha no sea en el pasado
+    const fechaSeleccionada = new Date(fecha);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (fechaSeleccionada < hoy) {
+      mostrarMensaje('La fecha no puede ser anterior a hoy', 'error');
+      return;
+    }
+
+    // Preparar datos de la reserva
+    const reservaData = {
+      fecha,
+      hora,
+      tipoMasaje,
+      duracion: parseInt(duracion),
+      zonasSeleccionadas: zonasSeleccionadas.join(', '),
+      observaciones,
+      telefono,
+      esUrgente
+    };
+
+    try {
+      mostrarCargando(true);
+
+      const response = await fetch(`${API_BASE_URL}/reservar-masaje`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('pakua_token')}`
+        },
+        body: JSON.stringify(reservaData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        mostrarMensaje('¡Reserva enviada exitosamente! Recibirás confirmación pronto.', 'success');
+
+        // Limpiar formulario después de 2 segundos
+        setTimeout(() => {
+          document.getElementById('form-reserva-masaje').reset();
+          configurarFechaMinima();
+        }, 2000);
+
+        // Redirigir a página principal después de 3 segundos
+        setTimeout(() => {
+          window.location.href = 'Pagina-principal.html';
+        }, 3000);
+      } else {
+        mostrarMensaje(result.message || 'Error al enviar la reserva', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      mostrarMensaje('Error de conexión. Verifica que el servidor esté ejecutándose.', 'error');
+    } finally {
+      mostrarCargando(false);
+    }
+  }
+
+  // Configurar fecha mínima
+  function configurarFechaMinima() {
+    const fechaInput = document.getElementById('fecha-reserva');
+    const today = new Date().toISOString().split('T')[0];
+    fechaInput.min = today;
+  }
+
+  // Función para formatear la fecha en español
+  function formatearFecha(fecha) {
+    const opciones = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    return new Date(fecha).toLocaleDateString('es-ES', opciones);
+  }
+</script>
+
+</body>
+</html>

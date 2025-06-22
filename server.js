@@ -500,18 +500,69 @@ app.get('/api/alumnos-con-mensajes', verificarToken, async (req, res) => {
         });
     }
 });
+// Añadir esta ruta antes del middleware 404
+app.post('/api/enviar-respuesta', verificarToken, async (req, res) => {
+    try {
+        const { mensajeOriginalId, mensaje, asunto = '', esUrgente = false } = req.body;
+        const userId = req.user.id;
 
+        if (!mensaje || mensaje.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'El mensaje no puede estar vacío'
+            });
+        }
+
+        // Obtener el mensaje original para saber el maestro
+        const [mensajeOriginal] = await db.execute(
+            'SELECT id_emisor FROM mensajes WHERE id = ?',
+            [mensajeOriginalId]
+        );
+
+        if (mensajeOriginal.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mensaje original no encontrado'
+            });
+        }
+
+        const maestroId = mensajeOriginal[0].id_emisor;
+
+        // Guardar respuesta en base de datos
+        const [result] = await db.execute(
+            'INSERT INTO mensajes (id_emisor, id_receptor, mensaje, asunto, es_urgente) VALUES (?, ?, ?, ?, ?)',
+            [userId, maestroId, mensaje.trim(), asunto.trim(), esUrgente]
+        );
+
+        res.json({
+            success: true,
+            message: 'Respuesta enviada correctamente',
+            data: {
+                id: result.insertId
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al enviar respuesta:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
 // Ruta para obtener mensajes del alumno (MOVIDA ANTES DEL MIDDLEWARE 404)
+// Cambiar esta ruta:
 app.get('/api/mis-mensajes', verificarToken, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Obtener mensajes del alumno con nombre del maestro
+        // Modificar la consulta para incluir id_emisor como maestro_id
         const [rows] = await db.execute(
-            `SELECT m.id, m.asunto, m.mensaje, m.fecha_envio, m.leido, m.es_urgente, u.nombre AS maestro_nombre 
+            `SELECT m.id, m.asunto, m.mensaje, m.fecha_envio, m.leido, m.es_urgente,
+                    u.nombre AS maestro_nombre, u.id AS maestro_id
              FROM mensajes m
-             JOIN users u ON m.id_emisor = u.id
-             WHERE m.id_receptor = ? 
+                      JOIN users u ON m.id_emisor = u.id
+             WHERE m.id_receptor = ?
              ORDER BY m.fecha_envio DESC`,
             [userId]
         );
@@ -520,7 +571,6 @@ app.get('/api/mis-mensajes', verificarToken, async (req, res) => {
             success: true,
             data: rows
         });
-
     } catch (error) {
         console.error('Error al obtener mensajes del alumno:', error);
         res.status(500).json({
@@ -529,7 +579,6 @@ app.get('/api/mis-mensajes', verificarToken, async (req, res) => {
         });
     }
 });
-
 // Ruta para marcar mensaje como leído (MOVIDA ANTES DEL MIDDLEWARE 404)
 app.put('/api/marcar-leido/:mensajeId', verificarToken, async (req, res) => {
     try {

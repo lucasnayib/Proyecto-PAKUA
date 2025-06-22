@@ -28,8 +28,6 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="#">CURSOS</a></li>
           <li class="nav-item"><a class="nav-link" href="#">CLASES</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">CALENDARIO</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">ARANCELES</a></li>
           <li class="nav-item"><a class="nav-link" href="#">ACTIVIDAD</a></li>
           <!-- Información del usuario y botón de cerrar sesión -->
           <li class="nav-item dropdown">
@@ -59,29 +57,28 @@
   </div>
 
   <div class="contenedor-maestro">
-    <div class="item" id="asistencia"><h1>REGISTRA TU ASISTENCIA</h1></div>
-    <div class="item" id="arranceles"><h1>ARANCELES</h1></div>
-    <div class="item" id="calendario"><h1>CALENDARIO DE CLASES</h1></div>
-
-    <div class="item" id="consultas"><h1>CONSULTA CON TU MAESTRO</h1></div>
-    <div class="item" id="reservas"><h1>RESERVA UN MASAJE</h1></div>
+    <a href="#" class="mensaje"><div class="item" id="asistencia"><h1>REGISTRA TU ASISTENCIA</h1></div></a>
+    <a href="#" class="mensaje"><div class="item" id="arranceles"><h1>ARRANCERES</h1></div></a>
+    <a href="#" class="mensaje"> <div class="item" id="calendario"><h1>CALENDARIO DE CLASES</h1></div></a>
+    <a href="masajes.html" class="mensaje"><div class="item" id="reservas"><h1>RESERVA UN MASAJE</h1></div></a>
     <div class="item maestro-only" id="gestion-alumnos" style="display: none;">
       <h1>GESTIÓN DE ALUMNOS</h1>
       <a href="gestion-alumnos.html" class="btn btn-primary">
         <i class="fas fa-users me-1"></i> Ver lista de alumnos
       </a>
     </div>
-    <div class="item Alumno-only" id="mis-mensajes" style="display: none;">
-      <h1>MIS MENSAJES</h1>
-      <a href="mensajes-alumnos.html" class="btn btn-primary">
-        <i class="fas fa-envelope me-1"></i> Ver mis mensajes
-      </a>
-    </div>
+    <a href="mensajes-alumnos.html" class="mensaje"><div class="item Alumno-only" id="mis-mensajes" style="display: none;">
+      <h1>
+        <i></i> MENSAJES
+       </h1>
+
+    </div></a>
 
     <div class="item maestro-only" id="enviar-noticias" style="display: none;">
       <h1>ENVIAR NOTICIAS</h1>
     </div>
   </div>
+
 </main>
 
 <footer>
